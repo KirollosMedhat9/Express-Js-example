@@ -66,7 +66,8 @@ app.post('/signup', async (req, res) => {
             password
         });
         await newUser.save();
-
+        const newUserPrint = await User.findOne(newUser);
+        console.log("new User: " + newUserPrint);
         res.status(201).json({
             message: "Signup successful"
         });
