@@ -122,6 +122,39 @@ app.get('/login', (req, res) => {
 });
 
 
+//get users request
+app.get('/users', async (req, res) => {
+    try {
+        const users = await User.find();
+        res.render('index', {
+            users
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            error: 'Server Error'
+        })
+    }
+});
+app.post('/deleteUser', async (req, res) => {
+    try {
+        const userId = req.body.userId;
+        console.log("Deleted: ", User.findById(userId));
+        await User.findByIdAndDelete(userId); //drop remove 
+
+        res.redirect('/users'); //users
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            error: "Server error"
+        });
+    }
+});
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+
 
 app.listen(8000, () => {
     console.log("Server has started at port 8000");
