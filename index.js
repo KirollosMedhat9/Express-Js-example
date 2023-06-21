@@ -3,6 +3,9 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const path = require("path");
 const app = express();
+const userSchema = require("./models/user");
+const loginRoute = require("./routes/loginRoute");
+const signRoute = require("./routes/signupRoute");
 
 // Configure the session middleware
 app.use(session({
@@ -23,28 +26,29 @@ app.use(session({
 
 
 
-// Define the user schema
-const userSchema = new mongoose.Schema({
-    username: {
-        type: String,
-        required: true
-    },
-    password: {
-        type: String,
-        required: true
-    },
-    isAdmin: {
-        type: Boolean,
-        default: false
-    }
-});
+// // Define the user schema
+// const userSchema = new mongoose.Schema({
+//     username: {
+//         type: String,
+//         required: true
+//     },
+//     password: {
+//         type: String,
+//         required: true
+//     },
+//     isAdmin: {
+//         type: Boolean,
+//         default: false
+//     }
+// });
 
-// Create the User model based on the schema
-const User = mongoose.model("User", userSchema);
+// // Create the User model based on the schema
+// const User = mongoose.model("User", userSchema);
+const User = mongoose.model('User', userSchema);
 
 
 
-
+//Connection
 const uri = "mongodb+srv://kirollosmedhat:kiro01206517417@cluster0.5g5kioq.mongodb.net/user?retryWrites=true&w=majority"
 async function connect() {
     try {
@@ -61,8 +65,9 @@ async function connect() {
         console.error(error);
     }
 }
-
 connect();
+
+
 //Make one user admin and then in the future add the MakeAdmin feature 
 async function makeAdmin() {
     const admin = await User.findOne({
@@ -92,87 +97,6 @@ app.use(express.urlencoded({
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Signup post
-app.post('/signup', async (req, res) => {
-    try {
-        const {
-            username,
-            password
-        } = req.body;
-
-        // Check if the username already exists
-        const existingUser = await User.findOne({
-            username
-        });
-        if (existingUser) {
-            console.log('Existing User:', existingUser);
-            return res.status(409).json({
-                error: "Username already exists"
-            });
-        }
-
-        // Create a new user
-        const newUser = new User({
-            username,
-            password
-        });
-        await newUser.save();
-        const newUserPrint = await User.findOne(newUser);
-        console.log("new User: " + newUserPrint);
-        res.status(201).json({
-            message: "Signup successful"
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            error: "Server error"
-        });
-    }
-});
-//Sign up get
-app.get('/signup', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'signup.html'));
-});
-
-// Login post
-app.post('/login', async (req, res) => {
-    try {
-        const {
-            username,
-            password
-        } = req.body;
-
-        const user = await User.findOne({
-            username
-        });
-        if (!user) {
-            return res.status(404).json({
-                error: "User not found"
-            });
-        }
-        if (user.password !== password) {
-            return res.status(401).json({
-                error: "Invalid password"
-            });
-        }
-
-        // res.status(200).json({
-        //     message: "Login successful"
-        // });
-        res.redirect('/users');
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            error: "Server error"
-        });
-    }
-});
-
-
-//Login get
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
-});
 
 
 //get users request
@@ -209,10 +133,14 @@ app.post('/deleteUser', async (req, res) => {
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+
+
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'home.html'));
 });
-
+app.use('/', loginRoute);
+app.use('/', signRoute);
 app.listen(8000, () => {
     console.log("Server has started at port 8000");
 });
