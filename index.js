@@ -6,6 +6,7 @@ const app = express();
 const userSchema = require("./models/user");
 const loginRoute = require("./routes/loginRoute");
 const signRoute = require("./routes/signupRoute");
+const usersRoute = require("./routes/usersRoute");
 
 // Configure the session middleware
 app.use(session({
@@ -25,25 +26,6 @@ app.use(session({
 }));
 
 
-
-// // Define the user schema
-// const userSchema = new mongoose.Schema({
-//     username: {
-//         type: String,
-//         required: true
-//     },
-//     password: {
-//         type: String,
-//         required: true
-//     },
-//     isAdmin: {
-//         type: Boolean,
-//         default: false
-//     }
-// });
-
-// // Create the User model based on the schema
-// const User = mongoose.model("User", userSchema);
 const User = mongoose.model('User', userSchema);
 
 
@@ -100,19 +82,19 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 //get users request
-app.get('/users', async (req, res) => {
-    try {
-        const users = await User.find();
-        res.render('index', {
-            users
-        })
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({
-            error: 'Server Error'
-        })
-    }
-});
+// app.get('/users', async (req, res) => {
+//     try {
+//         const users = await User.find();
+//         res.render('index', {
+//             users
+//         })
+//     } catch (error) {
+//         console.log(error)
+//         res.status(500).json({
+//             error: 'Server Error'
+//         })
+//     }
+// });
 app.post('/deleteUser', async (req, res) => {
     try {
         const userId = req.body.userId;
@@ -139,6 +121,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'home.html'));
 });
+app.use('/', usersRoute);
 app.use('/', loginRoute);
 app.use('/', signRoute);
 app.listen(8000, () => {
